@@ -4,14 +4,21 @@
   "description": "Chainlink external adapter for Kaiko - https://www.kaiko.com/",
   "license": "MIT",
   "scripts": {
-    "test": "./node_modules/.bin/_mocha"
+    "build": "npx tsc",
+    "lint": "tslint --config tslint.json '*.ts' 'src/**/*.ts' 'test/**.*.ts' -t verbose",
+    "test": "mocha -r ts-node/register test/**/*.test.ts",
+    "watch": "npx tsc -w"
   },
   "dependencies": {
     "moment": "^2.22.2",
     "request": "^2.88.0"
   },
   "devDependencies": {
+    "@types/request": "^2.48.1",
     "chai": "^4.2.0",
-    "mocha": "^5.2.0"
+    "mocha": "^5.2.0",
+    "ts-node": "^8.2.0",
+    "tslint": "^5.16.0",
+    "typescript": "^3.5.1"
   }
 }
