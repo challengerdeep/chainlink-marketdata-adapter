@@ -1,34 +1,15 @@
 import request = require('request');
+
 import { RequestPart } from 'request';
 import { URLSearchParams } from 'url';
+import logger from './logger';
+
 
 // valid variations:
 // https://<eu|us>.market-api.kaiko.io/v1/data/trades.v1/exchanges/cbse/spot/btc-usd/aggregations/ohlcv/recent
 // https://<eu|us>.market-api.kaiko.io/v1/data/trades.v1/exchanges/cbse/spot/btc-usd/aggregations/vwap/recent'
 // https://<eu|us>.market-api.kaiko.io/v1/data/trades.v1/exchanges/cbse/spot/btc-usd/aggregations/count_ohlcv_vwap/recent
 // https://<eu|us>.market-api.kaiko.io/v1/data/trades.v1/spot_direct_exchange_rate/link/usdt/recent?interval=1m&limit=2
-
-type Validator = (v: string) => boolean;
-
-interface InputData {
-  region: string;
-  endpoint: string;
-  params?: string;
-}
-
-interface InputParams {
-  id: string;
-  data: InputData;
-}
-
-interface ChainlinkResult {
-  jobRunID: string;
-  status?: string;
-  error?: string;
-  data?: any;
-}
-
-type Callback = (statusCode: number, result: ChainlinkResult) => void;
 
 const validateRegion: Validator = v =>
     v && ['eu', 'us'].includes(v);
@@ -38,6 +19,7 @@ const validateParams: Validator = v =>
     v && !!v.match(/^[\x00-\x7F]*$/);
 
 const createRequest = (input: InputParams, callback: Callback) => {
+  logger.info('Received request', input);
   const throwError = (statusCode: number, error: string) => callback(statusCode, {
     jobRunID: input.id,
     status: 'errored',

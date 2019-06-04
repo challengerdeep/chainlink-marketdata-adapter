@@ -10,11 +10,14 @@
     "watch": "npx tsc -w"
   },
   "dependencies": {
+    "@google-cloud/logging-winston": "^0.11.1",
     "moment": "^2.22.2",
-    "request": "^2.88.0"
+    "request": "^2.88.0",
+    "winston": "^3.2.1"
   },
   "devDependencies": {
     "@types/request": "^2.48.1",
+    "@types/winston": "^2.4.4",
     "chai": "^4.2.0",
     "mocha": "^5.2.0",
     "ts-node": "^8.2.0",
