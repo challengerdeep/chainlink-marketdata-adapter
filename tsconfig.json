@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2018",
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "outDir": "./",
+    "sourceMap": true,
+    "lib": [
+      "esnext"
+    ],
+    "rootDir": "./src/"
+  },
+  "files": [
+      "src/index.ts",
+      "src/index.d.ts",
+  ]
+}
