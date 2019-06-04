@@ -4,14 +4,15 @@
     "target": "es2018",
     "noImplicitAny": true,
     "noUnusedLocals": true,
-    "outDir": "dist",
+    "outDir": "./",
     "sourceMap": true,
     "lib": [
       "esnext"
-    ]
+    ],
+    "rootDir": "./src/"
   },
-  "include": [
-      "src/**/*",
-      "test/**/*"
+  "files": [
+      "src/index.ts",
+      "src/index.d.ts",
   ]
 }
