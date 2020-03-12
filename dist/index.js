@@ -19,7 +19,7 @@ const createRequest = (input, callback) => {
         error
     });
     const { region, endpoint } = input.data;
-    const params = input.data.params.replace('limit=1', 'limit=20');
+    const params = input.data.params.replace('limit=1', 'limit=50');
     if (!validateRegion(region)) {
         return throwError(400, 'Invalid region');
     }
