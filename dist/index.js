@@ -29,7 +29,7 @@ const createRequest = (input, callback) => {
     if (!validateParams(params)) {
         return throwError(400, 'Invalid params');
     }
-    const url = `https://${region}.market-api.kaiko.io/${endpoint}?${params}`;
+    const url = `https://eu.market-api.kaiko.io/${endpoint}?${params}`;
     const headers = {
         'X-Api-Key': process.env.CUBIT_API_KEY,
         'User-Agent': 'Kaiko Chainlink Adapter'
