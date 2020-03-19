@@ -26,8 +26,10 @@ const createRequest = (input: InputParams, callback: Callback) => {
     error
   });
 
-  const { region, endpoint } = input.data;
+  const { region } = input.data;
   const params = input.data.params.replace('limit=1', 'limit=50');
+  const endpoint = input.data.endpoint.replace('_exchange_rate/', '_exchange_rate_es/');
+
   if (!validateRegion(region)) {
     return throwError(400, 'Invalid region');
   }
