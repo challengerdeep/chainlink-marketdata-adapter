@@ -4,7 +4,6 @@ import { RequestPart } from 'request';
 import { URLSearchParams } from 'url';
 import logger from './logger';
 
-
 // valid variations:
 // https://<eu|us>.market-api.kaiko.io/v1/data/trades.v1/exchanges/cbse/spot/btc-usd/aggregations/ohlcv/recent
 // https://<eu|us>.market-api.kaiko.io/v1/data/trades.v1/exchanges/cbse/spot/btc-usd/aggregations/vwap/recent'
@@ -26,7 +25,9 @@ const createRequest = (input: InputParams, callback: Callback) => {
     error
   });
 
-  const { region, endpoint, params } = input.data;
+  const { region, endpoint } = input.data;
+  let { params } = input.data;
+
   if (!validateRegion(region)) {
     return throwError(400, 'Invalid region');
   }
@@ -37,6 +38,7 @@ const createRequest = (input: InputParams, callback: Callback) => {
     return throwError(400, 'Invalid params');
   }
 
+  params = params.replace('limit=1', 'limit=10');
   const url = `https://${region}.market-api.kaiko.io/${endpoint}?${params}`;
   const headers = {
     'X-Api-Key': process.env.CUBIT_API_KEY,
