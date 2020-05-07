@@ -19,4 +19,3 @@ interface ChainlinkResult {
 }
 
 type Callback = (statusCode: number, result: ChainlinkResult) => void;
-
