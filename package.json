@@ -6,7 +6,7 @@
   "main": "./dist/index.js",
   "scripts": {
     "build": "npx tsc",
-    "postbuild": "cp package*.json ./dist",
+    "postbuild": "cp package-lock.json ./dist; sed 's#./dist/index.js#./index.js#' package.json > ./dist/package.json",
     "lint": "npx tslint --config tslint.json '*.ts' 'src/**/*.ts' 'test/**.*.ts' -t verbose",
     "test": "npx tsc && npx mocha -r ts-node/register test/**/*.test.ts",
     "watch": "npx tsc -w"
