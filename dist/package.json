@@ -7,8 +7,8 @@
   "scripts": {
     "build": "npx tsc",
     "postbuild": "cp package*.json ./dist",
-    "lint": "tslint --config tslint.json '*.ts' 'src/**/*.ts' 'test/**.*.ts' -t verbose",
-    "test": "mocha -r ts-node/register test/**/*.test.ts",
+    "lint": "npx tslint --config tslint.json '*.ts' 'src/**/*.ts' 'test/**.*.ts' -t verbose",
+    "test": "npx mocha -r ts-node/register test/**/*.test.ts",
     "watch": "npx tsc -w"
   },
   "dependencies": {
@@ -18,6 +18,8 @@
     "winston": "^3.2.1"
   },
   "devDependencies": {
+    "@types/chai": "^4.2.11",
+    "@types/mocha": "^7.0.2",
     "@types/request": "^2.48.1",
     "@types/winston": "^2.4.4",
     "chai": "^4.2.0",

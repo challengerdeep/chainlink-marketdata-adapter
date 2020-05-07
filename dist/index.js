@@ -8,8 +8,9 @@ const logger_1 = require("./logger");
 // https://<eu|us>.market-api.kaiko.io/v1/data/trades.v1/exchanges/cbse/spot/btc-usd/aggregations/vwap/recent'
 // https://<eu|us>.market-api.kaiko.io/v1/data/trades.v1/exchanges/cbse/spot/btc-usd/aggregations/count_ohlcv_vwap/recent
 // https://<eu|us>.market-api.kaiko.io/v1/data/trades.v1/spot_direct_exchange_rate/link/usdt/recent?interval=1m&limit=2
+// https://<eu|us>.market-api.kaiko.io/v1/data/trades.v1/exchanges/spots/recent?pattern=*:spot:*
 const validateRegion = v => v && ['eu', 'us'].includes(v);
-const validateEndpoint = v => v && !!v.match(/^v1\/data\/trades\.v[0-9]+\/(exchanges\/[^?\/]+\/[^?\/]+\/[^?\/]+\/aggregations\/[^?\/]+|spot_direct_exchange_rate\/[^?\/]+\/[^?\/]+)\/recent$/);
+const validateEndpoint = v => v && !!v.match(/^v1\/data\/trades\.v[0-9]+\/(exchanges|spot_direct_exchange_rate)\/(.*)\/recent$/);
 const validateParams = v => v && !!v.match(/^[\x00-\x7F]*$/);
 const createRequest = (input, callback) => {
     logger_1.default.info('Received request', input);
@@ -18,7 +19,8 @@ const createRequest = (input, callback) => {
         status: 'errored',
         error
     });
-    const { region, endpoint, params } = input.data;
+    const { region, endpoint } = input.data;
+    let { params } = input.data;
     if (!validateRegion(region)) {
         return throwError(400, 'Invalid region');
     }
@@ -28,6 +30,7 @@ const createRequest = (input, callback) => {
     if (!validateParams(params)) {
         return throwError(400, 'Invalid params');
     }
+    params = params.replace('limit=1', 'limit=10');
     const url = `https://${region}.market-api.kaiko.io/${endpoint}?${params}`;
     const headers = {
         'X-Api-Key': process.env.CUBIT_API_KEY,
@@ -76,4 +79,5 @@ exports.handler = (event, context, callback) => {
     });
 };
 module.exports.createRequest = createRequest;
+module.exports.validateEndpoint = validateEndpoint;
 //# sourceMappingURL=index.js.map

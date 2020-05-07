@@ -9,11 +9,12 @@ import logger from './logger';
 // https://<eu|us>.market-api.kaiko.io/v1/data/trades.v1/exchanges/cbse/spot/btc-usd/aggregations/vwap/recent'
 // https://<eu|us>.market-api.kaiko.io/v1/data/trades.v1/exchanges/cbse/spot/btc-usd/aggregations/count_ohlcv_vwap/recent
 // https://<eu|us>.market-api.kaiko.io/v1/data/trades.v1/spot_direct_exchange_rate/link/usdt/recent?interval=1m&limit=2
+// https://<eu|us>.market-api.kaiko.io/v1/data/trades.v1/exchanges/spots/recent?pattern=*:spot:*
 
 const validateRegion: Validator = v =>
     v && ['eu', 'us'].includes(v);
 const validateEndpoint: Validator = v =>
-    v && !!v.match(/^v1\/data\/trades\.v[0-9]+\/(exchanges\/[^?\/]+\/[^?\/]+\/[^?\/]+\/aggregations\/[^?\/]+|spot_direct_exchange_rate\/[^?\/]+\/[^?\/]+)\/recent$/);
+    v && !!v.match(/^v1\/data\/trades\.v[0-9]+\/(exchanges|spot_direct_exchange_rate)\/(.*)\/recent$/);
 const validateParams: Validator = v =>
     v && !!v.match(/^[\x00-\x7F]*$/);
 
