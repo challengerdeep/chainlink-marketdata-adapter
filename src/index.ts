@@ -91,3 +91,4 @@ exports.handler = (event: any, context: any, callback: Callback) => {
 };
 
 module.exports.createRequest = createRequest;
+module.exports.validateEndpoint = validateEndpoint;
