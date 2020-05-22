@@ -39,7 +39,7 @@ const createRequest = (input: InputParams, callback: Callback) => {
     return throwError(400, 'Invalid params');
   }
 
-  params = params.replace('limit=1', 'limit=50');
+  params = params.replace('limit=1', 'limit=100');
   const url = `https://${region}.market-api.kaiko.io/${endpoint}?${params}`;
   const headers = {
     'X-Api-Key': process.env.CUBIT_API_KEY,
