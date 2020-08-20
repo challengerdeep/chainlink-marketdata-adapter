@@ -1,5 +1,3 @@
-type Validator = (v: string) => boolean;
-
 interface InputData {
   base?: string;
   from?: string;
@@ -18,7 +16,9 @@ interface ChainlinkResult {
   jobRunID: string;
   status?: string;
   error?: string;
-  data?: any;
+  data?: {
+    result: number
+  };
 }
 
 type Callback = (statusCode: number, result: ChainlinkResult) => void;

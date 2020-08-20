@@ -56,12 +56,14 @@ const createRequest = (input, callback) => {
             });
         }
         else {
-            const price = doInverse
-                ? (1 / body.data[0].price)
-                : body.data[0].price;
+            const result = doInverse
+                ? (1 / parseFloat(body.data[0].price))
+                : parseFloat(body.data[0].price);
             callback(response.statusCode, {
                 jobRunID: input.id,
-                data: price
+                data: {
+                    result
+                }
             });
         }
     });
