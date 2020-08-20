@@ -1,9 +1,12 @@
 type Validator = (v: string) => boolean;
 
 interface InputData {
-  region: string;
-  endpoint: string;
-  params?: string;
+  base?: string;
+  from?: string;
+  coin?: string;
+  quote?: string;
+  to?: string;
+  market?: string;
 }
 
 interface InputParams {
