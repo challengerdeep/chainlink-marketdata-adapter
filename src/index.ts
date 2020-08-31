@@ -5,6 +5,7 @@ import logger from './logger';
 import MarketDataClient from './MarketDataClient';
 import SpotDirectExchangeRateClient from './SpotDirectExchangeRateClient';
 import SpotExchangeRateClient from './SpotExchangeRateClient';
+import VWAPDirectExchangeRateClient from './VWAPDirectExchangeRateClient';
 
 const run = async (input: InputParams): Promise<Big> => {
   logger.info('Received request', input);
@@ -31,18 +32,17 @@ const run = async (input: InputParams): Promise<Big> => {
 
   const client = new MarketDataClient();
 
-  let agent: IPriceClient;
-  switch (input.data.method) {
-    case 'spot_exchange_rate':
-      agent = new SpotExchangeRateClient(client);
-      break;
-    case 'vwap':
-      break;
-    case 'spot_direct_exchange_rate':
-    default:
-      agent = new SpotDirectExchangeRateClient(client);
-      break;
-  }
+  const agent: IPriceClient = ((method: string) => {
+    switch (method) {
+      case 'spot_exchange_rate':
+        return new SpotExchangeRateClient(client);
+      case 'vwap':
+        return new VWAPDirectExchangeRateClient(client, parseInt(process.env.MAX_QUOTE_ASSETS, 10));
+      case 'spot_direct_exchange_rate':
+      default:
+        return new SpotDirectExchangeRateClient(client);
+    }
+  })(input.data.method);
 
   const price = await agent.getPrice(base, quote, '1m');
   const result = doInverse
