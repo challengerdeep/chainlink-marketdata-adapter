@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { Big } from 'big.js';
+import { sortBy, take, union, uniqBy } from 'lodash';
 import { IPriceClient } from './IPriceClient';
 import logger from './logger';
 import MarketDataClient from './MarketDataClient';
@@ -35,12 +36,16 @@ export default class VWAPExchangeRateClient implements IPriceClient {
   }
 
   public async getPrice(baseAsset: string, quoteAsset: string, interval: string) {
-    const proxyAssets = await this.fetchProxyAssets(baseAsset);
+    // 1. Identify all assets traded both toward quote and base assets in the "right" direction
+    const proxyAssets = await this.fetchProxyAssets(baseAsset, quoteAsset);
+    // 2. Fetch most recent price and volume for each base > proxy > quote
+    // (note: would be more sane to make sure timestamps match across)
     const constituents = await Promise.all(proxyAssets.map(async proxyAsset =>
       proxyAsset === quoteAsset
         ? await this.fetchDirectSpotExchangeRate(baseAsset, quoteAsset, interval)
         : await this.fetchRate(baseAsset, proxyAsset, quoteAsset, interval)
     ));
+    // 3. VWAP it. Volume expressed in quote asset.
     const { price } = VWAPExchangeRateClient.calculateVWAP(constituents);
     return price;
   }
@@ -51,13 +56,12 @@ export default class VWAPExchangeRateClient implements IPriceClient {
       this.fetchDirectSpotExchangeRate(proxyAsset, quoteAsset, interval)
     ]);
     return {
-      quoteAsset,
       volume: proxyInQuote.volume.eq(0) ? proxyInQuote.volume : baseInProxy.volume,
       price: baseInProxy.price.mul(proxyInQuote.price)
     };
   }
 
-  private async fetchProxyAssets(baseAsset: string): Promise<string[]> {
+  private async fetchSpotPairs(): Promise<Pair[]> {
     const url = 'https://reference-data-api.kaiko.io/v1/instruments';
     const instrumentsResponse = await axios.get(url, {
       url,
@@ -66,11 +70,26 @@ export default class VWAPExchangeRateClient implements IPriceClient {
     logger.info('Forwarding request', {
       url
     });
-    const quoteAssets: string[] = Array.from(new Set<string>(instrumentsResponse.data
-      .filter((instrument: any) => !!instrument.quote_asset && instrument.base_asset === baseAsset)
-      .map((instrument: any) => instrument.quote_asset)))
-      .slice(0, this.maxProxyAssets);
-    return quoteAssets;
+    const spotInstruments = (instrumentsResponse.data.data as Instrument[]).filter(i => i.class === 'spot');
+    return uniqBy(
+        spotInstruments,
+        ({ quote_asset, base_asset }) => `${base_asset}-${quote_asset}`
+      ).map(i => ({
+        baseAsset: i.base_asset,
+        quoteAsset: i.quote_asset
+      }));
+  }
+
+  // Returns all assets traded both to quote asset and base asset
+  private async fetchProxyAssets(baseAsset: string, quoteAsset: string): Promise<string[]> {
+    const allPairs = await this.fetchSpotPairs();
+    const baseMatchAssets = allPairs.filter(p => p.baseAsset === baseAsset && !!p.quoteAsset).map(p => p.quoteAsset);
+    const quoteMatchAssets = allPairs.filter(p => p.quoteAsset === quoteAsset && !!p.baseAsset).map(p => p.baseAsset);
+    const matchingAssets = union(baseMatchAssets, quoteMatchAssets);
+    return take(
+      sortBy(matchingAssets, a => a === quoteAsset ? 0 : 1),
+      this.maxProxyAssets
+    );
   }
 
   private async fetchDirectSpotExchangeRate(baseAsset: string, quoteAsset: string, interval: string) {
@@ -80,10 +99,18 @@ export default class VWAPExchangeRateClient implements IPriceClient {
          interval,
        });
     return {
-      quoteAsset,
       volume: new Big(rates[0]?.volume || 0),
       price: new Big(rates[0]?.price || 0)
     };
   }
+}
+interface Pair {
+  quoteAsset: string;
+  baseAsset: string;
+}
 
+interface Instrument {
+  base_asset: string;
+  quote_asset: string;
+  class: string;
 }
