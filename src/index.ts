@@ -1,91 +1,85 @@
-import request = require('request');
-
-import { RequestPart } from 'request';
-import { URLSearchParams } from 'url';
+import Big, { RoundingMode } from 'big.js';
+import ClientError from './ClientError';
+import { IPriceClient } from './IPriceClient';
 import logger from './logger';
+import MarketDataClient from './MarketDataClient';
+import SpotDirectExchangeRateClient from './SpotDirectExchangeRateClient';
+import SpotExchangeRateClient from './SpotExchangeRateClient';
 
-const createRequest = (input: InputParams, callback: Callback) => {
+const run = async (input: InputParams): Promise<Big> => {
   logger.info('Received request', input);
-  const throwError = (statusCode: number, error: string) => callback(statusCode, {
-    jobRunID: input.id,
-    status: 'errored',
-    error
-  });
 
   let base = input.data.base || input.data.from || input.data.coin;
   let quote = input.data.quote || input.data.to || input.data.market;
 
   if (!base || !base.match(/^[a-zA-Z0-9]+$/)) {
-    return throwError(400, 'Invalid base asset');
+    throw new ClientError(400, `Invalid or missing base asset ${base}`);
   }
 
   if (!quote || !quote.match(/^[a-zA-Z0-9]+$/)) {
-    return throwError(400, 'Invalid quote asset');
+    throw new ClientError(400, `Invalid or missing quote asset ${quote}`);
   }
 
-  base = base.toLowerCase();
-  quote = quote.toLowerCase();
+  const doInverse =  input.data.do_inverse || base === 'usdt' && quote === 'eth'; // Existing job compatability
+  if (doInverse) {
+    base = quote.toLowerCase();
+    quote = base.toLowerCase();
+  } else {
+    base = base.toLowerCase();
+    quote = quote.toLowerCase();
+  }
 
-  const doInverse = base === 'usdt' && quote === 'eth';
+  const client = new MarketDataClient();
 
-  const url = doInverse
-    ? `https://us.market-api.kaiko.io/v1/data/trades.v1/spot_direct_exchange_rate/${quote}/${base}/recent`
-    : `https://us.market-api.kaiko.io/v1/data/trades.v1/spot_direct_exchange_rate/${base}/${quote}/recent`;
-  const headers = {
-    'X-Api-Key': process.env.CUBIT_API_KEY,
-    'User-Agent': 'Kaiko Chainlink Exchange Rate Adapter'
-  };
-  const params = {
-    interval: '1m',
-  };
-  const qs = new URLSearchParams(params);
-  const options = {
-    url,
-    qs,
-    headers,
-    json: true
-  };
+  let agent: IPriceClient;
+  switch (input.data.method) {
+    case 'spot_exchange_rate':
+      agent = new SpotExchangeRateClient(client);
+      break;
+    case 'vwap':
+      break;
+    case 'spot_direct_exchange_rate':
+    default:
+      agent = new SpotDirectExchangeRateClient(client);
+      break;
+  }
 
-  logger.info('Forwarding request', {
-    jobRunID: input.id,
-    url
-  });
-  request(options, (error, response, body) => {
-    logger.info('Got response', {
-      jobRunID: input.id,
-      statusCode: response.statusCode,
-      error
-    });
-    if (error || response.statusCode >= 400) {
-      callback(response.statusCode, {
-        jobRunID: input.id,
-        status: 'errored',
-        error: body
-      });
-    } else {
-      const result = doInverse
-        ? (1 / parseFloat(body.data[0].price))
-        : parseFloat(body.data[0].price);
-      callback(response.statusCode, {
-        jobRunID: input.id,
-        data: {
-          result
-        }
-      });
+  const price = await agent.getPrice(base, quote, '1m');
+  const result = doInverse
+    ? new Big(1).div(price)
+    : price;
+  return result;
+};
+
+const createResponse = (req: InputParams, price: Big): ChainlinkResult => ({
+  jobRunID: req.id,
+  status: '200',
+  data: {
+    result: parseInt(price.round(0, RoundingMode.RoundHalfEven).toString(), 10)
+  }
+});
+
+// GCP Cloud Fuction handler
+
+export const gcpservice = (req: { body: InputParams }, res: any) => {
+  const params = req.body;
+  run(params)
+  .then(price => {
+    if (price) {
+      const response = createResponse(params, price);
+      return res.status(200).send(response);
     }
-  });
+  })
+  .catch((err: Error) => {
+    logger.error(err.message);
+    const response = {
+      jobRunID: params.id,
+      status: 'errored',
+      error: err.message
+    };
+    return err.name === 'ClientError'
+      ? res.status((err as ClientError).statusCode).send(response)
+      : res.status(500).send(response);
+    }
+  );
 };
-
-exports.gcpservice = (req: RequestPart, res: any) => {
-  createRequest(req.body, (statusCode, data) => {
-    res.status(statusCode).send(data);
-  });
-};
-
-exports.handler = (event: any, context: any, callback: Callback) => {
-  createRequest(event, (statusCode, data) => {
-    callback(null, data);
-  });
-};
-
-module.exports.createRequest = createRequest;
