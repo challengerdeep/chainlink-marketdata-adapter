@@ -6,7 +6,7 @@
     "jsRules": {},
     "rules": {
         "indent": [true, "spaces", 2],
-        "interface-name": [true, "never-prefix"],
+        "interface-name": [false],
         "max-line-length": [false, 120],
         "variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore", "allow-pascal-case", "allow-snake-case"],
         "quotemark": [true, "single", "avoid-escape", "avoid-template"],
