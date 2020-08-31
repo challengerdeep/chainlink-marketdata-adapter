@@ -14,7 +14,7 @@ export default class SpotExchangeRateClient implements IPriceClient {
   }
   public async getPrice(base: string, quote: string, interval: string) {
     const rates = await this.client.fetchMarketData(
-      `/data/trades.v1/spot_direct_exchange_rate/${base}/${quote}/recent`,
+      `v1/data/trades.v1/spot_direct_exchange_rate/${base}/${quote}/recent`,
        {
          interval,
        });
