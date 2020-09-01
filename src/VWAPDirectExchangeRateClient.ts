@@ -2,6 +2,7 @@ import { Big } from 'big.js';
 import { intersection, take, uniq, uniqBy } from 'lodash';
 import { IMarketDataClient } from './index.d';
 import { IPriceClient } from './IPriceClient';
+import logger from './logger';
 
 interface VWAPEntry {
   timestamp: number;
@@ -44,8 +45,13 @@ export default class VWAPExchangeRateClient implements IPriceClient {
         : await this.fetchRate(baseAsset, proxyAsset, quoteAsset, interval)
     ));
     // 3. VWAP it. Volume expressed in quote asset.
-    const { price } = VWAPExchangeRateClient.calculateVWAP(constituents);
-    return price;
+    const vwap = VWAPExchangeRateClient.calculateVWAP(constituents);
+    logger.debug({
+      proxyAssets,
+      constituents,
+      vwap
+    });
+    return vwap.price;
   }
 
   public async fetchRate(baseAsset: string, proxyAsset: string, quoteAsset: string, interval: string) {
@@ -59,7 +65,7 @@ export default class VWAPExchangeRateClient implements IPriceClient {
     };
   }
 
-  private async fetchSpotPairs(): Promise<Pair[]> {
+  public async fetchSpotPairs(): Promise<Pair[]> {
     const instruments = await this.client.fetchInstruments();
     const spotInstruments = instruments.filter(i => i.class === 'spot');
     return uniqBy(
@@ -72,7 +78,7 @@ export default class VWAPExchangeRateClient implements IPriceClient {
   }
 
   // Returns all assets traded both to quote asset and base asset
-  private async fetchProxyAssets(baseAsset: string, quoteAsset: string): Promise<string[]> {
+  public async fetchProxyAssets(baseAsset: string, quoteAsset: string): Promise<string[]> {
     const allPairs = await this.fetchSpotPairs();
     const baseMatchAssets = allPairs.filter(p => p.baseAsset === baseAsset && !!p.quoteAsset).map(p => p.quoteAsset);
     const quoteMatchAssets = allPairs.filter(p => p.quoteAsset === quoteAsset && !!p.baseAsset).map(p => p.baseAsset);
@@ -81,13 +87,20 @@ export default class VWAPExchangeRateClient implements IPriceClient {
     if (directPair) {
       matchingAssets.unshift(quoteAsset);
     }
+    logger.debug({
+      allPairs,
+      baseMatchAssets,
+      quoteMatchAssets,
+      directPair,
+      matchingAssets,
+    });
     return take(
       uniq(matchingAssets),
       this.maxProxyAssets
     );
   }
 
-  private async fetchDirectSpotExchangeRate(baseAsset: string, quoteAsset: string, interval: string) {
+  protected async fetchDirectSpotExchangeRate(baseAsset: string, quoteAsset: string, interval: string) {
     const rates = await this.client.fetchMarketData(
       `v1/data/trades.v1/spot_direct_exchange_rate/${baseAsset}/${quoteAsset}/recent`,
        {
