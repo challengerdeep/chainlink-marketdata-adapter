@@ -24,4 +24,15 @@ interface ChainlinkResult {
   };
 }
 
+export interface Instrument {
+  base_asset: string;
+  quote_asset: string;
+  class: string;
+}
+
+export interface IMarketDataClient<S> {
+  fetchInstruments(): Promise<Instrument[]>;
+  fetchMarketData<T extends S>(endpoint: string, querystringParams: {}): Promise<T[]>;
+}
+
 type Callback = (statusCode: number, result: ChainlinkResult) => void;

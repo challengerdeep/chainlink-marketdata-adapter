@@ -1,6 +1,6 @@
 import { Big } from 'big.js';
+import { IMarketDataClient } from './index.d';
 import { IPriceClient } from './IPriceClient';
-import MarketDataClient from './MarketDataClient';
 
 interface ExchangeRateEntry {
   timestamp: number;
@@ -8,8 +8,8 @@ interface ExchangeRateEntry {
 }
 
 export default class SpotExchangeRateClient implements IPriceClient {
-  private client: MarketDataClient<ExchangeRateEntry>;
-  constructor(client: MarketDataClient<ExchangeRateEntry>) {
+  private client: IMarketDataClient<ExchangeRateEntry>;
+  constructor(client: IMarketDataClient<ExchangeRateEntry>) {
     this.client = client;
   }
   public async getPrice(base: string, quote: string, interval: string) {

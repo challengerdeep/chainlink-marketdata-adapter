@@ -1,9 +1,7 @@
-import axios from 'axios';
 import { Big } from 'big.js';
 import { intersection, take, uniq, uniqBy } from 'lodash';
+import { IMarketDataClient } from './index.d';
 import { IPriceClient } from './IPriceClient';
-import logger from './logger';
-import MarketDataClient from './MarketDataClient';
 
 interface VWAPEntry {
   timestamp: number;
@@ -27,10 +25,10 @@ export default class VWAPExchangeRateClient implements IPriceClient {
     };
   }
 
-  private readonly client: MarketDataClient<VWAPEntry>;
+  private readonly client: IMarketDataClient<VWAPEntry>;
   private readonly maxProxyAssets: number;
 
-  constructor(client: MarketDataClient<VWAPEntry>, maxProxyAssets: number = 5) {
+  constructor(client: IMarketDataClient<VWAPEntry>, maxProxyAssets: number = 5) {
     this.client = client;
     this.maxProxyAssets = maxProxyAssets;
   }
@@ -62,15 +60,8 @@ export default class VWAPExchangeRateClient implements IPriceClient {
   }
 
   private async fetchSpotPairs(): Promise<Pair[]> {
-    const url = 'https://reference-data-api.kaiko.io/v1/instruments';
-    const instrumentsResponse = await axios.get(url, {
-      url,
-      responseType: 'json'
-    });
-    logger.info('Forwarding request', {
-      url
-    });
-    const spotInstruments = (instrumentsResponse.data.data as Instrument[]).filter(i => i.class === 'spot');
+    const instruments = await this.client.fetchInstruments();
+    const spotInstruments = instruments.filter(i => i.class === 'spot');
     return uniqBy(
         spotInstruments,
         ({ quote_asset, base_asset }) => `${base_asset}-${quote_asset}`
@@ -111,10 +102,4 @@ export default class VWAPExchangeRateClient implements IPriceClient {
 interface Pair {
   quoteAsset: string;
   baseAsset: string;
-}
-
-interface Instrument {
-  base_asset: string;
-  quote_asset: string;
-  class: string;
 }

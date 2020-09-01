@@ -1,5 +1,6 @@
 import Big, { RoundingMode } from 'big.js';
 import ClientError from './ClientError';
+import { ChainlinkResult, InputParams } from './index.d';
 import { IPriceClient } from './IPriceClient';
 import logger from './logger';
 import MarketDataClient from './MarketDataClient';
