@@ -1,6 +1,6 @@
 {
   "name": "kaiko-adapter",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Chainlink external adapter for Kaiko - https://www.kaiko.com/",
   "license": "MIT",
   "main": "./dist/index.js",
