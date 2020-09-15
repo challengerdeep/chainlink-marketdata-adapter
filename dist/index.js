@@ -49,7 +49,7 @@ const createResponse = (req, price) => ({
     jobRunID: req.id,
     status: '200',
     data: {
-        result: parseInt(price.round(0, 2 /* RoundHalfEven */).toString(), 10)
+        result: parseFloat(price.round(18, 2 /* RoundHalfEven */).toString())
     }
 });
 // GCP Cloud Fuction handler
