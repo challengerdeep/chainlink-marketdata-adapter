@@ -52,6 +52,6 @@ export default class VWAPExchangeRateClient implements IPriceClient {
        });
     logger.debug(rates);
     const rate = rates.find(r => r.price !== null);
-    return new Big(rate.price)
+    return new Big(rate?.price)
   }
 }

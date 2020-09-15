@@ -28,9 +28,11 @@ export default class VWAPExchangeRateClient implements IPriceClient {
 
   private readonly client: IMarketDataClient<VWAPEntry>;
   private readonly maxProxyAssets: number;
+  private readonly limit: number;
 
-  constructor(client: IMarketDataClient<VWAPEntry>, maxProxyAssets: number = 5) {
+  constructor(client: IMarketDataClient<VWAPEntry>, limit: number = 600, maxProxyAssets: number = 5) {
     this.client = client;
+    this.limit = limit;
     this.maxProxyAssets = maxProxyAssets;
   }
 
@@ -112,10 +114,12 @@ export default class VWAPExchangeRateClient implements IPriceClient {
       `v1/data/trades.v1/spot_direct_exchange_rate/${baseAsset}/${quoteAsset}/recent`,
        {
          interval,
+         limit: this.limit
        });
+    const rate = rates.find(r => r.price !== null);
     return {
-      volume: new Big(rates[0]?.volume || 0),
-      price: new Big(rates[0]?.price || 0)
+      volume: new Big(rate?.volume || 0),
+      price: new Big(rate?.price || 0)
     };
   }
 }
