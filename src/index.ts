@@ -41,7 +41,7 @@ const run = async (input: InputParams): Promise<Big> => {
       case 'spot_exchange_rate':
         return new SpotExchangeRateClient(client);
       case 'vwap':
-        return new VWAPDirectExchangeRateClient(client, parseInt(process.env.MAX_QUOTE_ASSETS, 10));
+        return new VWAPDirectExchangeRateClient(client, parseInt(process.env.MAX_QUOTE_ASSETS, 10) || 5);
       case 'spot_direct_exchange_rate':
       default:
         return new SpotDirectExchangeRateClient(client);
