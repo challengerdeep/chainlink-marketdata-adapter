@@ -9,7 +9,10 @@ const SpotDirectExchangeRateClient_1 = require("./SpotDirectExchangeRateClient")
 const SpotExchangeRateClient_1 = require("./SpotExchangeRateClient");
 const VWAPDirectExchangeRateClient_1 = require("./VWAPDirectExchangeRateClient");
 const run = async (input) => {
-    logger_1.default.info('Received request', input);
+    logger_1.default.info('Received request', {
+        input,
+        env: process.env
+    });
     let base = input.data.base || input.data.from || input.data.coin;
     let quote = input.data.quote || input.data.to || input.data.market;
     if (!base || !base.match(/^[a-zA-Z0-9]+$/)) {

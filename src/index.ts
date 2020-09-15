@@ -9,7 +9,10 @@ import SpotExchangeRateClient from './SpotExchangeRateClient';
 import VWAPDirectExchangeRateClient from './VWAPDirectExchangeRateClient';
 
 const run = async (input: InputParams): Promise<Big> => {
-  logger.info('Received request', input);
+  logger.info('Received request', {
+    input,
+    env: process.env
+  });
 
   let base = input.data.base || input.data.from || input.data.coin;
   let quote = input.data.quote || input.data.to || input.data.market;
