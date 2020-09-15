@@ -8,6 +8,7 @@ interface InputData {
   method?: 'spot_exchange_rate' | 'spot_direct_exchange_rate' | 'vwap';
   vwap_proxy_asset?: string;
   do_inverse?: boolean;
+  limit?: number;
 }
 
 interface InputParams {
