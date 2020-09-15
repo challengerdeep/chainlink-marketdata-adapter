@@ -56,7 +56,7 @@ const createResponse = (req: InputParams, price: Big): ChainlinkResult => ({
   jobRunID: req.id,
   status: '200',
   data: {
-    result: parseInt(price.round(0, RoundingMode.RoundHalfEven).toString(), 10)
+    result: parseFloat(price.round(18, RoundingMode.RoundHalfEven).toString())
   }
 });
 
