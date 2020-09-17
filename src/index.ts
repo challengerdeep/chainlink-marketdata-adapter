@@ -7,6 +7,7 @@ import MarketDataClient from './MarketDataClient';
 import SpotDirectExchangeRateClient from './SpotDirectExchangeRateClient';
 import SpotExchangeRateClient from './SpotExchangeRateClient';
 import VWAPDirectExchangeRateClient from './VWAPDirectExchangeRateClient';
+import VWAPUSDExchangeRateClient from './VWAPUSDExchangeRateClient';
 
 const run = async (input: InputParams): Promise<Big> => {
   logger.info('Received request', {
@@ -40,8 +41,10 @@ const run = async (input: InputParams): Promise<Big> => {
     switch (method) {
       case 'spot_exchange_rate':
         return new SpotExchangeRateClient(client);
-      case 'vwap':
-        return new VWAPDirectExchangeRateClient(client, parseInt(process.env.MAX_QUOTE_ASSETS, 10));
+      case 'vwap_usd':
+        return new VWAPUSDExchangeRateClient(client, input.data.limit || 600);
+      case 'vwap_direct':
+        return new VWAPDirectExchangeRateClient(client, input.data.limit || 600, parseInt(process.env.MAX_QUOTE_ASSETS, 10) || 5);
       case 'spot_direct_exchange_rate':
       default:
         return new SpotDirectExchangeRateClient(client);
