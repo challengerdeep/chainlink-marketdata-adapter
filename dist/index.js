@@ -8,6 +8,7 @@ const MarketDataClient_1 = require("./MarketDataClient");
 const SpotDirectExchangeRateClient_1 = require("./SpotDirectExchangeRateClient");
 const SpotExchangeRateClient_1 = require("./SpotExchangeRateClient");
 const VWAPDirectExchangeRateClient_1 = require("./VWAPDirectExchangeRateClient");
+const VWAPUSDExchangeRateClient_1 = require("./VWAPUSDExchangeRateClient");
 const run = async (input) => {
     logger_1.default.info('Received request', {
         input,
@@ -35,8 +36,10 @@ const run = async (input) => {
         switch (method) {
             case 'spot_exchange_rate':
                 return new SpotExchangeRateClient_1.default(client);
-            case 'vwap':
-                return new VWAPDirectExchangeRateClient_1.default(client, parseInt(process.env.MAX_QUOTE_ASSETS, 10));
+            case 'vwap_usd':
+                return new VWAPUSDExchangeRateClient_1.default(client, input.data.limit || 600);
+            case 'vwap_direct':
+                return new VWAPDirectExchangeRateClient_1.default(client, input.data.limit || 600, parseInt(process.env.MAX_QUOTE_ASSETS, 10) || 5);
             case 'spot_direct_exchange_rate':
             default:
                 return new SpotDirectExchangeRateClient_1.default(client);
