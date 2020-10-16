@@ -18,6 +18,7 @@ export default class SpotExchangeRateClient implements IPriceClient {
        {
          interval,
        });
-    return new Big(rates[0].price);
+    const rate = rates.find(r => r.price !== null);
+    return new Big(rate.price);
   }
 }
